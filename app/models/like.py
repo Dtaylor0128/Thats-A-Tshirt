@@ -12,7 +12,7 @@ class Like(db.Model):
         )   
     else:
         __table_args__ = (
-            db.UniqueConstraint('user_id', 'post_id', name='unique_user_post_like')
+            db.UniqueConstraint('user_id', 'post_id', name='unique_user_post_like'), # tuple constraint for user_id and post_id
             # Ensures a user can only like a post once
 
         )
