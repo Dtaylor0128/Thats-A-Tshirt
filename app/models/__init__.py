@@ -1,3 +1,8 @@
-from .db import db
+from .db import db, environment, SCHEMA, add_prefix_for_prod
 from .user import User
-from .db import environment, SCHEMA
+from .design import Design
+from .post import Post
+from .comment import Comment
+from .like import Like
+from .follow import Follow 
+
