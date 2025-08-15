@@ -13,3 +13,5 @@ def add_prefix_for_prod(attr):
         return f"{SCHEMA}.{attr}"
     else:
         return attr
+print("SCHEMA in use at runtime:", SCHEMA)
+print("Environment in use at runtime:", environment)
