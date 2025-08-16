@@ -106,3 +106,41 @@ def delete_post(id):
 # uses get_or_404 to return 404 if not found
 # logic: query for post by id, check user ownership, delete post, commit changes,
 # return success message with 200 status code
+
+
+
+
+
+
+########BONUS ROUTES SEARCH AND FILTER POSTS##########
+
+# GET /api/posts?user_id=<int:user_id> - list all posts by a specific user
+# @post_routes.route('/', methods=['GET'])
+# @login_required
+# def get_posts_by_user():
+#     user_id = request.args.get('user_id', type=int)
+#     if not user_id:
+#         return {'error': 'User ID is required'}, 400
+
+#     posts = Post.query.filter_by(user_id=user_id).all()
+#     return {'posts': [post.to_dict() for post in posts]}, 200
+# # fetches all posts created by a specific user
+# # logic: filter posts by user_id (from query parameter) and return them as a list
+# # of dictionaries under a "posts" key in the response JSON
+# # wraps response in a dictionary with a "posts" key {'posts': ...}
+# # returns a list of posts as dictionaries with 200 status code
+
+# GET /api/posts/search?query=<string:query> - search posts by keyword in caption
+# @post_routes.route('/search', methods=['GET'])
+# @login_required
+# def search_posts():
+#     query = request.args.get('query', '')
+#     if not query:
+#         return {'error': 'Search query is required'}, 400
+
+#     posts = Post.query.filter(Post.caption.ilike(f'%{query}%')).all()
+#     return {'posts': [post.to_dict() for post in posts]}, 200
+# searches posts by keyword in caption
+# logic: filter posts by caption using ilike for case-insensitive search
+# returns a list of posts as dictionaries under a "posts" key in the response JSON
+# wraps response in a dictionary with a "posts" key {'posts': ...}
