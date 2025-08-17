@@ -1,6 +1,6 @@
 from flask import Blueprint, request
 from flask_login import login_required, current_user
-from app.models import db, Follow, Post
+from app.models import db, Follow, User
 
 follow_routes = Blueprint('follows', __name__)
 
@@ -8,45 +8,49 @@ follow_routes = Blueprint('follows', __name__)
 @follow_routes.route('/', methods=['GET'])
 @login_required
 def get_my_follows():
-    """
-    Query for all follows by the current user
-    """
-    follows = Follow.query.filter_by(follower_id=current_user.id).all()
+    follows = Follow.query.filter_by((Follow.follower_id == current_user.id) | (Follow.following_id == current_user.id)).all()
     return {'follows': [follow.to_dict() for follow in follows]}, 200
-# fetches all follows created by the current user
-# logic: filter follows by follower_id (current_user.id) and return them as a list of dictionaries
-# under a "follows" key in the response JSON    
+# fetches all follows where the current user is either the follower or the following
+# returns a list of follows as dictionaries with 200 status code   
 
 
 # POST /api/follows - create a new follow (must be for user not already followed)
 @follow_routes.route('/', methods=['POST'])
 @login_required
-def create_follow():    
+def create_follow():
     data = request.get_json()
-    required = ['followed_id']
-    missing = [field for field in required if not data or field not in data or not data[field]]
+    required = ['following_id', 'follow_tag']
+    missing = [f for f in required if not data or f not in data or not data[f]]
     if missing:
         return {'error': f'Missing required fields: {", ".join(missing)}'}, 400
 
-    # Check if the user is already followed
-    existing_follow = Follow.query.filter_by(follower_id=current_user.id, followed_id=data['followed_id']).first()
-    if existing_follow:
-        return {'error': 'Already following this user'}, 400
+    if data['following_id'] == current_user.id:
+        return {'error': 'Cannot follow yourself.'}, 400
 
+    if Follow.query.filter_by(follower_id=current_user.id, following_id=data['following_id']).first():
+        return {'error': 'Already following this user'}, 409
+
+    user = User.query.get(data['following_id'])
+    if not user:
+        return {'error': 'User not found'}, 404
+    
     follow = Follow(
         follower_id=current_user.id,
-        followed_id=data['followed_id']
+        following_id=data['following_id'],
+        follow_tag=data.get('follow_tag'),
+        follow_comment=data.get('follow_comment')
     )
+
+    
     db.session.add(follow)
     db.session.commit()
     return {'follow': follow.to_dict()}, 201
-# auth required to create a follow
-# parse JSON data from request body
-# validate required fields (followed_id) returning error if missing 400
-# check if the user is already followed, returning 400 if so
-# create a new Follow object with follower_id, followed_id
-# add the follow to the session and commit
-# return created follow as a dictionary with 201 status code
+# checks if the required fields are present in the request data
+# checks if the user is trying to follow themselves or already follows the user
+# checks if the user to be followed exists
+# creates a new Follow instance and adds it to the session
+# commits the session and returns the new follow as a dictionary with 201 status code
+
 
 
 # DELETE /api/follows/<int:id> - unfollow a user by id

@@ -4,18 +4,34 @@ from app.models import db, Post, Design
 
 post_routes = Blueprint('posts', __name__)
 
-# GET /api/posts - list all posts by the current user
+# # GET /api/posts - list all posts by the current user
+# @post_routes.route('/', methods=['GET'])
+# @login_required
+# def get_my_posts():
+#     """
+#     Query for all posts by the current user
+#     """
+#     posts = Post.query.filter_by(user_id=current_user.id).all()
+#     return {'posts': [post.to_dict() for post in posts]}, 200
+# # fetches all posts created by the current user
+# # logic: filter posts by user_id (current_user.id) and return them as a list of dictionaries
+# # under a "posts" key in the response JSON
+
+
+#GET - api/posts - list all posts by the current user with filter
 @post_routes.route('/', methods=['GET'])
 @login_required
-def get_my_posts():
-    """
-    Query for all posts by the current user
-    """
-    posts = Post.query.filter_by(user_id=current_user.id).all()
+def get_posts():
+    user_id = request.args.get('user_id', type=int)
+    if user_id is not None:
+        posts = Post.query.filter_by(user_id=user_id).all()
+    else:
+        posts = Post.query.all()
+    
     return {'posts': [post.to_dict() for post in posts]}, 200
-# fetches all posts created by the current user
-# logic: filter posts by user_id (current_user.id) and return them as a list of dictionaries
-# under a "posts" key in the response JSON
+# fetches all posts created by the current user or a specific user if user_id is provided
+# logic: if user_id is provided, filter posts by user_id, otherwise return all posts
+# returns a list of posts as dictionaries under a "posts" key in the response JSON  
 
 
 
@@ -114,7 +130,7 @@ def delete_post(id):
 
 ########BONUS ROUTES SEARCH AND FILTER POSTS##########
 
-# GET /api/posts?user_id=<int:user_id> - list all posts by a specific user
+# GET /api/posts/user_id=<int:user_id> - list all posts by a specific user
 # @post_routes.route('/', methods=['GET'])
 # @login_required
 # def get_posts_by_user():
@@ -131,15 +147,15 @@ def delete_post(id):
 # # returns a list of posts as dictionaries with 200 status code
 
 # GET /api/posts/search?query=<string:query> - search posts by keyword in caption
-# @post_routes.route('/search', methods=['GET'])
-# @login_required
-# def search_posts():
-#     query = request.args.get('query', '')
-#     if not query:
-#         return {'error': 'Search query is required'}, 400
+@post_routes.route('/search', methods=['GET'])
+@login_required
+def search_posts():
+    query = request.args.get('q', '')
+    if not query:
+        return {'error': 'Search query is required'}, 400
 
-#     posts = Post.query.filter(Post.caption.ilike(f'%{query}%')).all()
-#     return {'posts': [post.to_dict() for post in posts]}, 200
+    posts = Post.query.filter(Post.caption.ilike(f'%{query}%')).all()
+    return {'posts': [post.to_dict() for post in posts]}, 200
 # searches posts by keyword in caption
 # logic: filter posts by caption using ilike for case-insensitive search
 # returns a list of posts as dictionaries under a "posts" key in the response JSON

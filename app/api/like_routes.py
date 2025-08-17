@@ -57,19 +57,33 @@ def delete_like(id):
 # returns a success message with 200 status code
 
 
+##### Bonus Routes Like List  #####
 
-# Note: The following route is commented out as it was not present in the api doc, by may be useful.
-# # GET /api/likes - list all likes by the current user
-# @like_routes.route('/', methods=['GET'])
-# @login_required
-# def get_my_likes():
-#     """
-#     Query for all likes by the current user
-#     """
-#     likes = Like.query.filter_by(user_id=current_user.id).all()
-#     return {'likes': [like.to_dict() for like in likes]}, 200
-# # fetches all likes created by the current user
-# # logic: filter likes by user_id (current_user.id) and return them as a list
-# # of dictionaries under a "likes" key in the response JSON
-# # wraps response in a dictionary with a "likes" key {'likes': ...}
-# # returns a list of likes as dictionaries with 200 status code
+# GET /api/likes - list all likes by the current user
+@like_routes.route('/', methods=['GET'])
+@login_required
+def get_my_likes():
+    likes = Like.query.filter_by(user_id=current_user.id).all()
+    return {'likes': [like.to_dict() for like in likes]}, 200
+# fetches all likes created by the current user
+# logic: filter likes by user_id (current_user.id) and return them as a list
+# of dictionaries under a "likes" key in the response JSON
+# wraps response in a dictionary with a "likes" key {'likes': ...}
+# returns a list of likes as dictionaries with 200 status code
+
+# GET /api/posts/<int:post_id>/likes - list all likes for a specific post
+@like_routes.route('/posts/<int:post_id>', methods=['GET'])
+@login_required
+def get_likes_for_post(post_id):
+    """
+    Query for all likes for a specific post
+    """
+    post = Post.query.get_or_404(post_id)
+    likes = Like.query.filter_by(post_id=post.id).all()
+    return {'likes': [like.to_dict() for like in likes]}, 200
+# fetches all likes for a specific post by post_id
+# uses get_or_404 to return 404 if post not found
+# logic: filter likes by post_id and return them as a list of dictionaries
+# under a "likes" key in the response JSON
+# wraps response in a dictionary with a "likes" key {'likes': ...}
+# returns a list of likes for the post as dictionaries with 200 status code  
