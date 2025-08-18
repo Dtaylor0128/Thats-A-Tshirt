@@ -8,7 +8,7 @@ follow_routes = Blueprint('follows', __name__)
 @follow_routes.route('/', methods=['GET'])
 @login_required
 def get_my_follows():
-    follows = Follow.query.filter_by((Follow.follower_id == current_user.id) | (Follow.following_id == current_user.id)).all()
+    follows = Follow.query.filter((Follow.follower_id == current_user.id) | (Follow.following_id == current_user.id)).all()
     return {'follows': [follow.to_dict() for follow in follows]}, 200
 # fetches all follows where the current user is either the follower or the following
 # returns a list of follows as dictionaries with 200 status code   
@@ -50,6 +50,46 @@ def create_follow():
 # checks if the user to be followed exists
 # creates a new Follow instance and adds it to the session
 # commits the session and returns the new follow as a dictionary with 201 status code
+
+
+# GET /api/follows/<id> - get a follow record by id
+@follow_routes.route('/<int:id>', methods=['GET'])
+@login_required
+def get_follow(id):
+    follow = Follow.query.get_or_404(id)
+    if follow.follower_id != current_user.id and follow.following_id != current_user.id:
+        return {'error': 'Follow not found'}, 403
+    return {'follow': follow.to_dict()}, 200
+# fetches a specific follow by id
+# checks if the follow belongs to the current user, returning 403 if not
+# returns the follow as a dictionary with 200 status code
+
+
+#PUT / api/follows/<int:id> - update tag/follow by comment by id(only follower can update )
+@follow_routes.route('/<int:id>', methods=['PUT'])
+@login_required
+def update_follow(id):
+    follow = Follow.query.get_or_404(id)
+    if follow.follower_id != current_user.id:
+        return {'error': 'Follow not found'}, 403
+    
+    data = request.get_json()
+    updated = False
+    if 'follow_tag' in data and data['follow_tag'] != follow.follow_tag:
+        follow.follow_tag = data['follow_tag']
+        updated = True
+    if 'follow_comment' in data and data['follow_comment'] != follow.follow_comment:
+        follow.follow_comment = data['follow_comment']
+        updated = True
+    if not updated:
+        return {'error': 'No changes made'}, 400
+    
+    db.session.commit()
+    return {'follow': follow.to_dict()}, 200
+# fetches a specific follow by id
+# checks if the follow belongs to the current user, returning 403 if not
+# updates the follow's tag and/or comment if provided in the request data
+# commits the session and returns the updated follow as a dictionary with 200 status code
 
 
 

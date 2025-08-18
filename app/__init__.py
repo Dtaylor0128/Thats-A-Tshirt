@@ -10,7 +10,7 @@ from .api.auth_routes import auth_routes
 from .api.design_routes import design_routes
 from .api.post_routes import post_routes
 from .api.comment_routes import comment_routes
-from api.like_routes import like_routes
+from .api.like_routes import like_routes
 from .api.follow_routes import follow_routes
 from .seeds import seed_commands
 from .config import Config
