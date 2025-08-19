@@ -13,7 +13,7 @@ ARG SCHEMA
 ARG SECRET_KEY
 
 
-ENV SCHEMA=$SCHEMA # set schema!!
+ENV SCHEMA=${SCHEMA} 
 
 WORKDIR /var/www
 
