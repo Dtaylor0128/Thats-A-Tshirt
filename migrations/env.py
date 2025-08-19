@@ -1,3 +1,4 @@
+import os
 from __future__ import with_statement
 
 import logging
@@ -87,11 +88,14 @@ def run_migrations_online():
 
     connectable = get_engine()
 
+    schema_name = os.environ.get('SCHEMA', 'public')
     with connectable.connect() as connection:
         context.configure(
             connection=connection,
             target_metadata=get_metadata(),
+            target_metadata_schema=schema_name,
             include_schemas=True,
+            version_table_schema=schema_name,
             process_revision_directives=process_revision_directives,
             **current_app.extensions['migrate'].configure_args
         )
