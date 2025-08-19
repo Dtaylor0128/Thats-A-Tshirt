@@ -18,7 +18,7 @@ RUN pip install -r requirements.txt
 RUN pip install psycopg2
 
 COPY . .
-
+RUN psql "$DATABASE_URL" -c "CREATE SCHEMA IF NOT EXISTS tshirt_schema;"
 RUN flask db upgrade
 RUN flask seed all
 CMD gunicorn app:app
