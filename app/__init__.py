@@ -1,5 +1,7 @@
+import logging
+
 import os
-from flask import Flask, render_template, request, session, redirect
+from flask import Flask, render_template, request, session, redirect, jsonify
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect, generate_csrf
@@ -17,7 +19,7 @@ from .config import Config
 
 
 app = Flask(__name__, static_folder='../react-vite/dist', static_url_path='/')
-
+logging.basicConfig(level=logging.DEBUG) # debbuger remember to remove in production
 # Setup login manager
 login = LoginManager(app)
 login.login_view = 'auth.unauthorized'
@@ -100,6 +102,10 @@ def react_root(path):
     return app.send_static_file('index.html')
 
 
+# @app.errorhandler(404)
+# def not_found(e):
+#     return app.send_static_file('index.html')
 @app.errorhandler(404)
 def not_found(e):
-    return app.send_static_file('index.html')
+    return jsonify(error="Resource not found"), 404
+#handle 404 errors globally

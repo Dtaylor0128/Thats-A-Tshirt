@@ -1,3 +1,4 @@
+import logging
 from flask import Blueprint, jsonify, request
 from flask_login import login_required, current_user
 from app.models import Design, db
@@ -69,9 +70,7 @@ def get_design(id):
 @design_routes.route('/<int:id>', methods=['PUT'])
 @login_required
 def update_design(id):
-    """
-    Update an existing design by id must belong to the current user
-    """
+
     design = Design.query.get_or_404(id)
     if design.user_id != current_user.id:
         return {'error': 'Not your design'}, 403
