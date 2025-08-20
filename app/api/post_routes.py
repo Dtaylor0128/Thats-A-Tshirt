@@ -20,7 +20,6 @@ post_routes = Blueprint('posts', __name__)
 
 #GET - api/posts - list all posts by the current user with filter
 @post_routes.route('/', methods=['GET'])
-@login_required
 def get_posts():
     user_id = request.args.get('user_id', type=int)
     if user_id is not None:
@@ -69,7 +68,7 @@ def create_post():
 
 # GET /api/posts/<int:id> - get a specific post by id
 @post_routes.route('/<int:id>', methods=['GET'])
-@login_required
+
 def get_post(id):
     post = Post.query.get_or_404(id)
     if post.user_id != current_user.id:
@@ -148,7 +147,7 @@ def delete_post(id):
 
 # GET /api/posts/search?query=<string:query> - search posts by keyword in caption
 @post_routes.route('/search', methods=['GET'])
-@login_required
+
 def search_posts():
     query = request.args.get('q', '')
     if not query:

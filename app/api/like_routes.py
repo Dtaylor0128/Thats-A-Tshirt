@@ -46,7 +46,7 @@ def create_like():
 def delete_like(id):
     like = Like.query.get_or_404(id)
     if like.user_id != current_user.id:
-        return {'error': 'Like not found'}, 403
+        return {'error': 'forbidden'}, 403
 
     db.session.delete(like)
     db.session.commit()
@@ -73,7 +73,7 @@ def get_my_likes():
 
 # GET /api/posts/<int:post_id>/likes - list all likes for a specific post
 @like_routes.route('/posts/<int:post_id>', methods=['GET'])
-@login_required
+
 def get_likes_for_post(post_id):
     """
     Query for all likes for a specific post

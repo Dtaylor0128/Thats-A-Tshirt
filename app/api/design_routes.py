@@ -7,7 +7,7 @@ design_routes = Blueprint('designs', __name__)
 
 # GET /api/designs - list all current user's designs
 @design_routes.route('/', methods=['GET'])
-@login_required
+
 def get_my_designs():
     """
     Query for all designs by the current user
@@ -50,14 +50,14 @@ def create_design():
 
 # GET /api/designs/<id> - get a specific design by id
 @design_routes.route('/<int:id>', methods=['GET'])
-@login_required
+
 def get_design(id):
     """
     Query for a design by id must belong to the current user
     """
     design = Design.query.get_or_404(id)
     if design.user_id != current_user.id:
-        return {'error': 'Design not found'}, 403
+        return {'error': 'forbidden'}, 403
     return {'design':design.to_dict()}, 200 
 # fetches a specific design by id
 # uses get_or_404 to return 404 if not found
