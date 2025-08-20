@@ -113,7 +113,7 @@ const initialState = {
 //reducer 
 export default function postsReducer(state = initialState, action) {
     switch (action.type) {
-        case SET_POST:
+        case SET_POST: {
             const { id } = action.payload;
             return {
                 ...state,
@@ -125,8 +125,8 @@ export default function postsReducer(state = initialState, action) {
                     ? state.allIDs
                     : [...state.allIDs, id]
             };
-
-        case SET_POSTS:
+        }
+        case SET_POSTS: {
             const incomingPosts = action.payload;
             const newById = { ...state.byID };
             const idsToAdd = [];
@@ -138,16 +138,21 @@ export default function postsReducer(state = initialState, action) {
                 }
             });
 
-
-
-
-        case REMOVE_POST:
+            return {
+                ...state,
+                byID: newById,
+                allIDs: [...state.allIDs, ...idsToAdd]
+            };
+        }
+        case REMOVE_POST: {
+            // eslint-disable-next-line no-unused-vars
             const { [action.payload]: _, ...restById } = state.byID;
             return {
                 ...state,
                 byID: restById,
                 allIDs: state.allIDs.filter(id => id !== action.payload)
             };
+        }
         case CLEAR_POSTS:
             return initialState;
         default:

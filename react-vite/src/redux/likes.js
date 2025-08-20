@@ -1,4 +1,4 @@
-import commentsReducer from "./comments";
+
 
 // likes action types
 const SET_LIKE = 'likes/setLike';

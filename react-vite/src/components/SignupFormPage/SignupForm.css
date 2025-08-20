@@ -1,0 +1,41 @@
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 400px;
+    margin: 1 rem auto;
+}
+
+label {
+    font-weight: 500;
+    color: #4d3565;
+    margin-bottom: 0.3 rem;
+}
+
+.error-text {
+    color: red;
+    font-size: 0.875 rem;
+    margin-top: 0.25 rem;
+    margin-bottom: 0.5 rem;
+    font-weight: 400;
+}
+
+input {
+    padding: 0.5 rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1 rem;
+}
+
+button {
+    padding: 0.5 rem;
+    background-color: #4d3565;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #3b2a4c;
+}
