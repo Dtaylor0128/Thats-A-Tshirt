@@ -1,12 +1,13 @@
-import logging
 
 import os
-from flask import Flask, render_template, request, session, redirect, jsonify
+import logging
+from flask import Flask, render_template, request, session, redirect, jsonify, g
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 from flask_login import LoginManager
 from .models import db, User
+from functools import wraps
 from .api.user_routes import user_routes
 from .api.auth_routes import auth_routes
 from .api.design_routes import design_routes
@@ -46,7 +47,13 @@ app.register_blueprint(follow_routes, url_prefix='/api/follows')
 db.init_app(app)
 Migrate(app, db)
 
+def create_app():
+    app = Flask(__name)
+    logging.basicConfig()
+    logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+    return app
 
+      # Debugging level logging
 # Application Security
 CORS(app)
 
@@ -109,3 +116,25 @@ def react_root(path):
 def not_found(e):
     return jsonify(error="Resource not found"), 404
 #handle 404 errors globally
+
+# handles authentication globally
+
+# def auth_required(f):
+#     """
+#     Decorator to require authentication for a route.
+#     """
+#     @wraps(f)
+#     def decorated_function(*args, **kwargs):
+#         token = request.headers.get('Authorization', None)
+#         if token is None or not validate_token(token):
+#             return jsonify({'error': 'Unauthorized'}), 401
+#         g.user = get_user_from_token(token)
+#         return f(*args, **kwargs)
+#     return decorated_function
+# @wraps keeps orginal functions metadata
+# fet value of header from incoming http request
+# checks if request has a token
+# if not, returns 401 Unauthorized
+# if token is present, validates it and retrieves user info
+# if token is valid, stores user info in g.user
+# and calls the original function with its arguments

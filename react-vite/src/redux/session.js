@@ -11,15 +11,15 @@ const removeUser = () => ({
 });
 
 export const thunkAuthenticate = () => async (dispatch) => {
-	const response = await fetch("/api/auth/");
-	if (response.ok) {
-		const data = await response.json();
-		if (data.errors) {
-			return;
-		}
+  const response = await fetch("/api/auth/");
+  if (response.ok) {
+    const data = await response.json();
+    if (data.errors) {
+      return;
+    }
 
-		dispatch(setUser(data));
-	}
+    dispatch(setUser(data));
+  }
 };
 
 export const thunkLogin = (credentials) => async dispatch => {
@@ -29,7 +29,7 @@ export const thunkLogin = (credentials) => async dispatch => {
     body: JSON.stringify(credentials)
   });
 
-  if(response.ok) {
+  if (response.ok) {
     const data = await response.json();
     dispatch(setUser(data));
   } else if (response.status < 500) {
@@ -47,7 +47,7 @@ export const thunkSignup = (user) => async (dispatch) => {
     body: JSON.stringify(user)
   });
 
-  if(response.ok) {
+  if (response.ok) {
     const data = await response.json();
     dispatch(setUser(data));
   } else if (response.status < 500) {
@@ -57,6 +57,30 @@ export const thunkSignup = (user) => async (dispatch) => {
     return { server: "Something went wrong. Please try again" }
   }
 };
+
+// Demo user domthedev
+export const thunkDemoLogin = () => async (dispatch) => {
+  const credentials = {
+    email: "domthedev@io.com",
+    password: "password"
+  };
+  const response = await fetch("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(credentials)
+  });
+  if (response.ok) {
+    const data = await response.json();
+    dispatch(setUser(data));
+    return data;
+  } else if (response.status < 500) {
+    const errorMessages = await response.json();
+    return errorMessages;
+  } else {
+    return { server: "Something went wrong. Please try again" };
+  }
+};
+// notes this thunkis used to log in demo user
 
 export const thunkLogout = () => async (dispatch) => {
   await fetch("/api/auth/logout");

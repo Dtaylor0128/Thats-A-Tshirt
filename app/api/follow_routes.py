@@ -6,7 +6,7 @@ follow_routes = Blueprint('follows', __name__)
 
 # GET /api/follows - list all follows by the current user
 @follow_routes.route('/', methods=['GET'])
-@login_required
+
 def get_my_follows():
     follows = Follow.query.filter((Follow.follower_id == current_user.id) | (Follow.following_id == current_user.id)).all()
     return {'follows': [follow.to_dict() for follow in follows]}, 200
@@ -54,7 +54,7 @@ def create_follow():
 
 # GET /api/follows/<id> - get a follow record by id
 @follow_routes.route('/<int:id>', methods=['GET'])
-@login_required
+
 def get_follow(id):
     follow = Follow.query.get_or_404(id)
     if follow.follower_id != current_user.id and follow.following_id != current_user.id:

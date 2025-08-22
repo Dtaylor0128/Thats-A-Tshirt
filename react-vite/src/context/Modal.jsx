@@ -20,12 +20,35 @@ export function ModalProvider({ children }) {
     }
   };
 
+  // NEW: Adding openMoDal ulitlity function
+  const openModal = (content, onCloseCallback) => {
+    setModalContent(content); // set the content to be rendered inside modal
+    if (typeof onCloseCallback === 'function') {
+      setOnModalClose(() => onCloseCallback); // set the callback function to be called
+    } else {
+      setOnModalClose(null); // reset the callback function to null
+    }
+  };
+  // Context value to be provided to children components
+  // This includes the modalRef, modalContent, setModalContent, setOnModalClose
+  // and closeModal functions.
+  // This allows children components to access the modal functionality
+  // without needing to pass props down through multiple levels.
+  // Children components can use the useModal hook to access these values.
+  // The modalRef is a reference to the div that will be used as the modal container
+
+
+
+
+
+
   const contextValue = {
     modalRef, // reference to modal div
     modalContent, // React component to render inside modal
     setModalContent, // function to set the React component to render inside modal
     setOnModalClose, // function to set the callback function called when modal is closing
-    closeModal // function to close the modal
+    closeModal, // function to close the modal
+    openModal // function to close the modal
   };
 
   return (
