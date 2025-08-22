@@ -6,7 +6,7 @@ comment_routes = Blueprint('comments', __name__)
 
 # GET /api/posts/<post_id>/comments - list all comments 
 @comment_routes.route('/posts/<int:post_id>/comments', methods=['GET'])
-@login_required
+
 def get_post_comments(post_id):
     post = Post.query.get_or_404(post_id)
     comments = Comment.query.filter_by(post_id=post_id).all()
@@ -49,7 +49,7 @@ def create_comment(post_id):
 
 # GET /api/comments/<int:id> - get a specific comment by id
 @comment_routes.route('/<int:id>', methods=['GET'])
-@login_required
+
 def get_comment(id):
     comment = Comment.query.get_or_404(id)
     post = comment.post
