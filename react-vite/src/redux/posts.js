@@ -35,19 +35,20 @@ export const thunkGetPost = (postId) => async (dispatch) => {
         return post;
     } else {
         // handle error
-        return { error: "Failed to fetch post" };
+        return { error: "Failed to fetch post", status: response.status };
     }
-}
+};
 
 // GET many posts (for example, for a user's feed)
 export const thunkGetPosts = () => async (dispatch) => {
     const response = await fetch('/api/posts');
     if (response.ok) {
-        const posts = await response.json();
-        dispatch(setPosts(posts));
-        return posts;
+        const data = await response.json();
+        // Make sure we're dispatching an array, not an object!
+        const postsArray = Array.isArray(data) ? data : data.posts;
+        dispatch(setPosts(postsArray));
+        return postsArray;
     } else {
-        // handle error
         return { error: "Failed to fetch posts" };
     }
 }
@@ -57,7 +58,8 @@ export const thunkCreatePost = (postData) => async (dispatch) => {
     const response = await fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(postData)
+        body: JSON.stringify(postData),
+        credentials: "include",
     });
 
     if (response.ok) {
@@ -75,7 +77,8 @@ export const thunkUpdatePost = (postId, updates) => async (dispatch) => {
     const response = await fetch(`/api/posts/${postId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates)
+        body: JSON.stringify(updates),
+        credentials: "include",
     });
 
     if (response.ok) {

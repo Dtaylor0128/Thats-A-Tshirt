@@ -1,3 +1,5 @@
+
+
 // action types for design  management
 const SET_DESIGN = 'designs/setDesign';
 const SET_DESIGNS = 'designs/setDesigns';
@@ -32,7 +34,9 @@ export const clearDesigns = () => ({
 export const thunkGetDesign = (designId) => async (dispatch) => {
     const response = await fetch(`/api/designs/${designId}`);
     if (response.ok) {
-        const design = await response.json();
+        const json = await response.json();
+        //flask wraps the design in a data object
+        const design = json.design;
         dispatch(setDesign(design));
         return design;
     } else {
@@ -40,12 +44,16 @@ export const thunkGetDesign = (designId) => async (dispatch) => {
         return { error: "Failed to fetch design" };
     }
 };
+// will extract the design from the response and work with reducer
+
 
 // GET many designs (for example, for a user's design list)
 export const thunkGetDesigns = () => async (dispatch) => {
-    const response = await fetch('/api/designs');
+    const response = await fetch('/api/designs/');
     if (response.ok) {
-        const designs = await response.json();
+        const data = await response.json();
+        // if data is {design:[]}, we only want the array
+        const designs = data.designs || data;
         dispatch(setDesigns(designs));
         return designs;
     } else {
@@ -55,30 +63,35 @@ export const thunkGetDesigns = () => async (dispatch) => {
 }
 
 // POST a new design (creating a new design)
-export const thunkCreateDesign = (designData) => async (dispatch) => {
-    const response = await fetch('/api/designs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(designData)
+export const thunkCreateDesign = (data) => async (dispatch) => {
+    const response = await fetch("/api/designs/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
     });
-
     if (response.ok) {
-        const design = await response.json();
-        dispatch(setDesign(design));
-        return design;
+        const newDesign = await response.json();
+        dispatch(setDesign(newDesign));
+        return newDesign;         // <<< CRUCIAL: return the new design!
     } else {
-        // handle error
-        const errorData = await response.json();
-        return errorData;
+        let error = "Something went wrong";
+        try {
+            const errJson = await response.json();
+            error = errJson.error || error;
+        } catch { }
+        return { error };
     }
-}
+};
+
 
 // PUT to update a design (editing an existing design)
 export const thunkUpdateDesign = (designId, updates) => async (dispatch) => {
     const response = await fetch(`/api/designs/${designId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates)
+        body: JSON.stringify(updates),
+        credentials: "include",
+
     });
 
     if (response.ok) {
@@ -107,7 +120,7 @@ export const thunkDeleteDesign = (designId) => async (dispatch) => {
     }
 }
 
-initialState = {
+const initialState = {
     byId: {}, // stores designs by their id
     allIds: [] // stores all design ids for easy iteration  
 };
@@ -124,14 +137,23 @@ export default function designsReducer(state = initialState, action) {
                     : [...state.allIds, design.id]
             };
         }
+        // case SET_DESIGNS: {
+        //     const designs = action.payload;
+        //     const byId = {};
+        //     const allIds = [];
+        //     designs.forEach(design => {
+        //         byId[design.id] = design;
+        //         allIds.push(design.id);
+        //     });
+        //     return { byId, allIds };
+        // }
         case SET_DESIGNS: {
-            const designs = action.payload;
             const byId = {};
             const allIds = [];
-            designs.forEach(design => {
+            for (let design of action.payload) {
                 byId[design.id] = design;
                 allIds.push(design.id);
-            });
+            };
             return { byId, allIds };
         }
         case REMOVE_DESIGN: {

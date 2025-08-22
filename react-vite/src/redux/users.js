@@ -17,12 +17,12 @@ const setUsers = (users) => ({
     payload: users // array of users
 });
 
-const removeUser = () => ({
+const removeUser = (userId) => ({
     type: REMOVE_USER,
     payload: userId // userId to remove
 });
 
-const clearUser = () => ({
+export const clearUser = () => ({
     type: CLEAR_USER
 });
 
@@ -130,7 +130,7 @@ export default function usersReducer(state = initialState, action) {
                 allIds: state.allIds.filter(id => id !== userId)
             };
         }
-        case CLEAR_USERS:
+        case CLEAR_USER:
             return { ...initialState };
         default:
             return state;

@@ -1,0 +1,17 @@
+ .design-editor {
+     max-width: 420px;
+     margin: 2em auto;
+     padding: 2em
+ }
+
+ .tshirt-canvas-wrapper {
+     position: relative;
+     /* width: 360px; */
+     /* height: 1px; */
+     /* margin: 0 auto 1em auto; */
+     /* background: #fff;
+    border: 1px solid #eee;
+    display: flex;
+    align-items: center;*/
+     justify-content: center;
+ }

@@ -41,7 +41,7 @@ def create_design():
     )
     db.session.add(design)
     db.session.commit()
-    return {'design':design.to_dict()}, 201
+    return jsonify(design.to_dict()), 201
 # auth required to create a design
 # parse JSON data from request body
 # validate required fields (title, svg_data) returning error if missing 400
