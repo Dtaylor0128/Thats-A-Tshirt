@@ -55,7 +55,7 @@ def create_app():
 
       # Debugging level logging
 # Application Security
-CORS(app)
+CORS(app, origins=["http://localhost:5173"], supports_credentials=True)
 
 
 # Since we are deploying with Docker and Flask,
@@ -104,8 +104,8 @@ def react_root(path):
     react builds in the production environment for favicon
     or index.html requests
     """
-    if path == 'favicon.ico':
-        return app.send_from_directory('public', 'favicon.ico')
+    if path == 'Thats-a-t-shirt-logo.jpg':
+        return app.send_from_directory('public', 'Thats-a-t-shirt-logo.jpg')
     return app.send_static_file('index.html')
 
 
@@ -114,23 +114,25 @@ def react_root(path):
 #     return app.send_static_file('index.html')
 @app.errorhandler(404)
 def not_found(e):
+    if not request.path.startswith('/api') and not request.path.startswith('/static'):
+        return app.send_static_file('index.html')
     return jsonify(error="Resource not found"), 404
 #handle 404 errors globally
 
 # handles authentication globally
 
-# def auth_required(f):
-#     """
-#     Decorator to require authentication for a route.
-#     """
-#     @wraps(f)
-#     def decorated_function(*args, **kwargs):
-#         token = request.headers.get('Authorization', None)
-#         if token is None or not validate_token(token):
-#             return jsonify({'error': 'Unauthorized'}), 401
-#         g.user = get_user_from_token(token)
-#         return f(*args, **kwargs)
-#     return decorated_function
+def auth_required(f):
+    """
+    Decorator to require authentication for a route.
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        token = request.headers.get('Authorization', None)
+        if token is None or not validate_token(token):
+            return jsonify({'error': 'Unauthorized'}), 401
+        g.user = get_user_from_token(token)
+        return f(*args, **kwargs)
+    return decorated_function
 # @wraps keeps orginal functions metadata
 # fet value of header from incoming http request
 # checks if request has a token

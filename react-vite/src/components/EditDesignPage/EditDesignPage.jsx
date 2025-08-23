@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
-import { thunkGetDesignById, thunkEditDesign, thunkDeleteDesign } from "../store/designs";
+import { thunkGetDesign, thunkUpdateDesign, thunkDeleteDesign } from "../../redux/designs";
 import "./EditDesignPage.css";
 
 const EditDesignPage = () => {
@@ -17,19 +17,20 @@ const EditDesignPage = () => {
     // Load design on mount
     useEffect(() => {
         if (!design) {
-            dispatch(thunkGetDesignById(id));
+            dispatch(thunkGetDesign(id));
         } else {
             setTitle(design.title);
-            setSvg(design.svg);
+            setSvg(design.svg_data || "");
         }
     }, [dispatch, id, design]);
 
     const handleSave = async (e) => {
         e.preventDefault();
+        console.log("Save handler fired");
         setLoading(true);
         setError(null);
         try {
-            await dispatch(thunkEditDesign({ id, title, svg }));
+            await dispatch(thunkUpdateDesign(id, { title, svg_data: svg }));
             navigate(`/designs/${id}`);
         } catch (err) {
             setError("Failed to save. Check your connection and try again.");
@@ -45,7 +46,7 @@ const EditDesignPage = () => {
         try {
             await dispatch(thunkDeleteDesign(id));
             // After delete: refresh or navigate away
-            navigate("/designs");
+            navigate("/designs/");
         } catch (err) {
             setError("Failed to delete. Try again.");
         } finally {
@@ -53,25 +54,27 @@ const EditDesignPage = () => {
         }
     };
 
-    if (!design) return <div className="edit-page__loading">Loading…</div>;
+
+
+    if (!design) return <div>Loading…</div>;
 
     return (
         <div className="edit-page grid-container">
-            <h2 className="edit-page__header">Edit Design</h2>
+            <h2 className="edit-page-header">Edit Design</h2>
             <form className="edit-form" onSubmit={handleSave}>
-                <label className="edit-form__label">
+                <label className="edit-form-label">
                     Title
                     <input
-                        className="edit-form__input"
+                        className="edit-form-input"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         required
                     />
                 </label>
-                <label className="edit-form__label">
+                <label className="edit-form-label">
                     SVG Markup
                     <textarea
-                        className="edit-form__textarea"
+                        className="edit-form-textarea"
                         value={svg}
                         onChange={(e) => setSvg(e.target.value)}
                         rows={10}
@@ -86,13 +89,14 @@ const EditDesignPage = () => {
                         Save
                     </button>
                     <button
-                        className="edit-form__button edit-form__button--danger"
+                        className="edit-form__button delete"
                         type="button"
                         onClick={handleDelete}
                         disabled={loading}
                     >
                         Delete
                     </button>
+
                 </div>
                 {error && <p className="edit-form__error">{error}</p>}
             </form>

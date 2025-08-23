@@ -1,8 +1,8 @@
 // comments actions types
-const SET_COMMENT = 'comments/setComment';
-const SET_COMMENTS = 'comments/setComments';
-const REMOVE_COMMENT = 'comments/removeComment';
-const CLEAR_COMMENTS = 'comments/clearComments';
+const SET_COMMENT = 'comments/setComment'; //create
+const SET_COMMENTS = 'comments/setComments';//read
+const REMOVE_COMMENT = 'comments/removeComment';//update
+const CLEAR_COMMENTS = 'comments/clearComments';//delete
 
 /// action creators
 export const setComment = (comment) => ({

@@ -1,29 +1,31 @@
 // action types for post management
-const SET_POST = 'posts/setPost';
-const SET_POSTS = 'posts/setPosts';
-const REMOVE_POST = 'posts/removePost';
-const CLEAR_POSTS = 'posts/clearPosts';
+const LOAD_POSTS = 'posts/LOAD_POSTS';          // fetch multiple posts
+const UPLOAD_POST = 'posts/UPLOAD_POST';        // fetch/create/replace a single post
+const CREATE_POST = 'posts/CREATE_POST';        // create a single post (used after POST)
+const UPDATE_POST = 'posts/UPDATE_POST';        // update a single post (used after PUT/PATCH)
+const DELETE_POST = 'posts/DELETE_POST';        // delete by id
 
-// action creators
-export const setPost = (post) => ({
-    type: SET_POST,
-    payload: post
+// --- Action Creators ---
+export const loadPosts = (posts) => ({
+    type: LOAD_POSTS,
+    posts
 });
-
-export const setPosts = (posts) => ({
-    type: SET_POSTS,
-    payload: posts // array of posts
+export const uploadPost = (post) => ({
+    type: UPLOAD_POST,
+    post
 });
-
-export const removePost = (postId) => ({
-    type: REMOVE_POST,
-    payload: postId
+export const createPost = (post) => ({
+    type: CREATE_POST,
+    post
 });
-
-export const clearPosts = () => ({
-    type: CLEAR_POSTS
+export const updatePost = (post) => ({
+    type: UPDATE_POST,
+    post
 });
-
+export const deletePost = (postId) => ({
+    type: DELETE_POST,
+    postId
+});
 
 // Thunks
 // GET one post by id
@@ -60,6 +62,7 @@ export const thunkCreatePost = (postData) => async (dispatch) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(postData),
         credentials: "include",
+
     });
 
     if (response.ok) {
