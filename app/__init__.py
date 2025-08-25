@@ -6,7 +6,8 @@ from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 from flask_login import LoginManager
-from .models import db, User
+
+from .models import db, User, Design, Post, Comment, Like, Follow
 from functools import wraps
 from .api.user_routes import user_routes
 from .api.auth_routes import auth_routes
@@ -20,7 +21,10 @@ from .config import Config
 
 
 app = Flask(__name__, static_folder='../react-vite/dist', static_url_path='/')
-logging.basicConfig(level=logging.DEBUG) # debbuger remember to remove in production
+if app.config['ENV'] =='development':
+    logging.basicConfig(level=logging.DEBUG)
+
+# logging.basicConfig(level=logging.DEBUG) # debbuger remember to remove in production
 # Setup login manager
 login = LoginManager(app)
 login.login_view = 'auth.unauthorized'
@@ -47,11 +51,11 @@ app.register_blueprint(follow_routes, url_prefix='/api/follows')
 db.init_app(app)
 Migrate(app, db)
 
-def create_app():
-    app = Flask(__name)
-    logging.basicConfig()
-    logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-    return app
+# def create_app():
+#     app = Flask(__name)
+#     logging.basicConfig()
+#     logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+#     return app
 
       # Debugging level logging
 # Application Security
