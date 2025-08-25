@@ -1,103 +1,121 @@
 // comments actions types
-const SET_COMMENT = 'comments/setComment'; //create
-const SET_COMMENTS = 'comments/setComments';//read
-const REMOVE_COMMENT = 'comments/removeComment';//update
-const CLEAR_COMMENTS = 'comments/clearComments';//delete
-
+const LOAD_COMMENTS = 'comments/LOAD_COMMENTS';          // fetch multiple comments
+const UPLOAD_COMMENT = 'comments/UPLOAD_COMMENT';        // fetch/create/replace a single comment
+const CREATE_COMMENT = 'comments/CREATE_COMMENT';        // create a single comment (used after POST)
+const UPDATE_COMMENT = 'comments/UPDATE_COMMENT';        // update a single comment (used after PUT/PATCH)
+const DELETE_COMMENT = 'comments/DELETE_COMMENT';        // delete by id
 /// action creators
-export const setComment = (comment) => ({
-    type: SET_COMMENT,
-    payload: comment
+export const loadComments = (comments) => ({
+    type: LOAD_COMMENTS,
+    comments
+});
+export const uploadComment = (comment) => ({
+    type: UPLOAD_COMMENT,
+    comment
 });
 
-export const setComments = (comments) => ({
-    type: SET_COMMENTS,
-    payload: comments // array of comments
+export const createComment = (comment) => ({
+    type: CREATE_COMMENT,
+    comment
 });
-
-export const removeComment = (commentId) => ({
-    type: REMOVE_COMMENT,
-    payload: commentId
+export const updateComment = (comment) => ({
+    type: UPDATE_COMMENT,
+    comment
 });
-
-export const clearComments = () => ({
-    type: CLEAR_COMMENTS
+export const deleteComment = (commentId) => ({
+    type: DELETE_COMMENT,
+    commentId
 });
 
 // Thunks
 // GET one comment by id
-export const thunkGetComment = (commentId) => async (dispatch) => {
-    const response = await fetch(`/api/comments/${commentId}`);
+export const thunkGetComment = (id) => async dispatch => {
+    const response = await fetch(`/api/comments/${id}`);
     if (response.ok) {
-        const comment = await response.json();
-        dispatch(setComment(comment));
-        return comment;
+        const data = await response.json();
+        dispatch(uploadComment(data.comment));  // uses UPLOAD_COMMENT for single fetch
+        return data.comment;
+    } else if (response.status < 500) {
+        const errorMessages = await response.json();
+        return errorMessages;
     } else {
-        // handle error
-        return { error: "Failed to fetch comment" };
+        return { server: "Something went wrong. Please try again" };
     }
-}
+};
+
+
 // GET many comments (for example, for a post's comments)
-export const thunkGetComments = () => async (dispatch) => {
+export const thunkGetComments = () => async dispatch => {
     const response = await fetch('/api/comments');
     if (response.ok) {
-        const comments = await response.json();
-        dispatch(setComments(comments));
-        return comments;
+        const data = await response.json();
+        const commentsArray = Array.isArray(data) ? data : data.comments;
+        dispatch(loadComments(commentsArray));
+        return commentsArray;
+    } else if (response.status < 500) {
+        const errorMessages = await response.json();
+        return errorMessages;
     } else {
-        // handle error
-        return { error: "Failed to fetch comments" };
+        return { server: "Something went wrong. Please try again" };
     }
-}
+};
 
 // POST a new comment (creating a new comment)
-export const thunkCreateComment = (commentData) => async (dispatch) => {
+export const thunkCreateComment = (commentData) => async dispatch => {
     const response = await fetch('/api/comments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(commentData)
+        body: JSON.stringify(commentData),
+        credentials: 'include'
     });
     if (response.ok) {
-        const newComment = await response.json();
-        dispatch(setComment(newComment));
-        return newComment;
+        const data = await response.json();
+        dispatch(createComment(data.comment));
+        return data.comment;
+    } else if (response.status < 500) {
+        const errorMessages = await response.json();
+        return errorMessages;
     } else {
-        // handle error
-        return { error: "Failed to create comment" };
+        return { server: "Something went wrong. Please try again" };
     }
-}
+};
+
 // PUT (update) a comment
-export const thunkUpdateComment = (commentId, updates) => async (dispatch) => {
-    const response = await fetch(`/api/comments/${commentId}`, {
+export const thunkUpdateComment = (id, updates) => async dispatch => {
+    const response = await fetch(`/api/comments/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates)
+        body: JSON.stringify(updates),
+        credentials: 'include'
     });
-
     if (response.ok) {
-        const updatedComment = await response.json();
-        dispatch(setComment(updatedComment));
-        return updatedComment;
+        const data = await response.json();
+        dispatch(updateComment(data.comment));
+        return data.comment;
+    } else if (response.status < 500) {
+        const errorMessages = await response.json();
+        return errorMessages;
     } else {
-        // handle error
-        return { error: "Failed to update comment" };
+        return { server: "Something went wrong. Please try again" };
     }
-}
+};
 
 // DELETE a comment
-export const thunkDeleteComment = (commentId) => async (dispatch) => {
-    const response = await fetch(`/api/comments/${commentId}`, {
-        method: 'DELETE'
+export const thunkDeleteComment = (id) => async dispatch => {
+    const response = await fetch(`/api/comments/${id}`, {
+        method: 'DELETE',
+        credentials: 'include'
     });
-
     if (response.ok) {
-        dispatch(removeComment(commentId));
-        return commentId;
+        dispatch(deleteComment(id));
+        return id;
+    } else if (response.status < 500) {
+        const errorMessages = await response.json();
+        return errorMessages;
     } else {
-        // handle error
-        return { error: "Failed to delete comment" };
+        return { server: "Something went wrong. Please try again" };
     }
-}
+};
 
 // Initial state
 const initialState = {
@@ -108,39 +126,36 @@ const initialState = {
 // Reducer
 export default function commentsReducer(state = initialState, action) {
     switch (action.type) {
-        case SET_COMMENT: {
-            const comment = action.payload;
+        case LOAD_COMMENTS: {
+            const newById = {};
+            const newAllIds = [];
+            action.comments.forEach(comment => {
+                newById[comment.id] = comment;
+                newAllIds.push(comment.id);
+            });
+            return { ...state, byId: newById, allIds: newAllIds };
+        }
+        case UPLOAD_COMMENT:
+        case CREATE_COMMENT:
+        case UPDATE_COMMENT: {
+            const comment = action.comment;
             return {
+                ...state,
                 byId: { ...state.byId, [comment.id]: comment },
                 allIds: state.allIds.includes(comment.id)
                     ? state.allIds
                     : [...state.allIds, comment.id]
             };
         }
-        case SET_COMMENTS: {
-            const comments = action.payload;
-            const byId = {};
-            const allIds = [];
-            comments.forEach(comment => {
-                byId[comment.id] = comment;
-                if (!allIds.includes(comment.id)) {
-                    allIds.push(comment.id);
-                }
-            });
-            return { byId, allIds };
-        }
-        case REMOVE_COMMENT: {
-            const commentId = action.payload;
-            const newById = { ...state.byId };
-            delete newById[commentId];
+        case DELETE_COMMENT: {
+            const { commentId } = action;
+            const { [commentId]: _, ...newById } = state.byId;
             return {
+                ...state,
                 byId: newById,
                 allIds: state.allIds.filter(id => id !== commentId)
             };
         }
-
-        case CLEAR_COMMENTS:
-            return { ...initialState };
         default:
             return state;
     }
