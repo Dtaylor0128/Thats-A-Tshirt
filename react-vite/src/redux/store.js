@@ -6,13 +6,15 @@ import {
 } from "redux";
 import thunk from "redux-thunk";
 import sessionReducer from "./session";
-import postsReducer from "./posts";
+//import postsReducer from "./posts";
 import designsReducer from "./designs";
+//import commentsReducer from "./comments";
 
 const rootReducer = combineReducers({
   session: sessionReducer,
   designs: designsReducer,
-  posts: postsReducer,
+  //posts: postsReducer,
+  //comments: commentsReducer,
 
 });
 

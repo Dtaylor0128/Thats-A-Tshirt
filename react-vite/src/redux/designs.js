@@ -14,7 +14,7 @@ export const setDesign = (design) => ({
 
 export const setDesigns = (designs) => ({
     type: SET_DESIGNS,
-    payload: designs // array of designs
+    designs // array of designs
 });
 
 export const removeDesign = (designId) => ({
@@ -49,37 +49,40 @@ export const thunkGetDesign = (designId) => async (dispatch) => {
 
 // GET many designs (for example, for a user's design list)
 export const thunkGetDesigns = () => async (dispatch) => {
-    const response = await fetch('/api/designs/');
+    const response = await fetch('/api/designs');
     if (response.ok) {
         const data = await response.json();
         // if data is {design:[]}, we only want the array
-        const designs = data.designs || data;
-        dispatch(setDesigns(designs));
-        return designs;
+
+        dispatch(setDesigns(data.designs));
+    } else if (response.status < 500) {
+        const errorMessages = await response.json();
+        return errorMessages
     } else {
-        // handle error
-        return { error: "Failed to fetch designs" };
+        return { server: "Something went wrong. Please try again" }
     }
-}
+};
+
 
 // POST a new design (creating a new design)
 export const thunkCreateDesign = (data) => async (dispatch) => {
     const response = await fetch("/api/designs/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
+        credentials: "include",
     });
     if (response.ok) {
         const newDesign = await response.json();
         dispatch(setDesign(newDesign));
-        return newDesign;         // <<< CRUCIAL: return the new design!
+        return newDesign; // <<< CRUCIAL: return the new design!
+
+    } else if (response.status < 500) {
+        const errorMessages = await response.json();
+        return errorMessages
     } else {
-        let error = "Something went wrong";
-        try {
-            const errJson = await response.json();
-            error = errJson.error || error;
-        } catch { }
-        return { error };
+
+        return { server: "Something went wrong, Please try again." };
     }
 };
 
@@ -120,10 +123,7 @@ export const thunkDeleteDesign = (designId) => async (dispatch) => {
     }
 }
 
-const initialState = {
-    byId: {}, // stores designs by their id
-    allIds: [] // stores all design ids for easy iteration  
-};
+const initialState = {};
 
 // Reducer
 export default function designsReducer(state = initialState, action) {
@@ -148,13 +148,10 @@ export default function designsReducer(state = initialState, action) {
         //     return { byId, allIds };
         // }
         case SET_DESIGNS: {
-            const byId = {};
-            const allIds = [];
-            for (let design of action.payload) {
-                byId[design.id] = design;
-                allIds.push(design.id);
-            };
-            return { byId, allIds };
+
+            const newState = { ...state, Designs: action.designs };
+            return newState;
+
         }
         case REMOVE_DESIGN: {
             const designId = action.payload;

@@ -9,10 +9,9 @@ design_routes = Blueprint('designs', __name__)
 @design_routes.route('/', methods=['GET'])
 
 def get_my_designs():
-    """
-    Query for all designs by the current user
-    """
-    designs = Design.query.filter_by(user_id=current_user.id).all()
+   
+    designs = Design.query.all(); 
+        # designs = Design.query.filter_by(user_id=current_user.id).all()
     return {'designs': [design.to_dict() for design in designs]}, 200   
  
 # fetches all designs created by the current user

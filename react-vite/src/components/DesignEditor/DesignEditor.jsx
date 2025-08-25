@@ -27,23 +27,30 @@ function DesignEditor() {
     //         reader.readAsDataURL(file);
     //     }
     // }
-    function handleImageUpload(e) {
-        setErrors([]);
-        const file = e.target.files[0];
+    // function handleImageUpload(e) {
+    //     setErrors([]);
+    //     const file = e.target.files[0];
+    //     if (!file) return;
+    //     if (!file.type.startsWith("image/")) {
+    //         setErrors(["Please upload a valid image file."]);
+    //         return;
+    //     }
+    function handleImageUpload(event) {
+        const file = event.target.files[0];
         if (!file) return;
-        if (!file.type.startsWith("image/")) {
-            setErrors(["Please upload a valid image file."]);
-            return;
-        }
         const reader = new FileReader();
-        reader.onload = (ev) => {
-            setDesignImage(ev.target.result);
-            e.target.value = ""; // <-- important: allows same file to be re-selected
-        };
-        reader.onerror = () => setErrors(["File upload failed"]);
-        e.target.value = "";
+        reader.onload = (e) => setDesignImage(e.target.result);
         reader.readAsDataURL(file);
     }
+    // const reader = new FileReader();
+    // reader.onload = (ev) => {
+    //     setDesignImage(ev.target.result);
+    //     e.target.value = ""; // <-- important: allows same file to be re-selected
+    // };
+    //     reader.onerror = () => setErrors(["File upload failed"]);
+    //     e.target.value = "";
+    //     reader.readAsDataURL(file);
+    // }
 
     // Generate SVG markup string including shirt outline and uploaded image
     function generateSVGMarkup({ shirtSVGPath, designImage }) {
@@ -61,9 +68,9 @@ function DesignEditor() {
 <svg width="${shirtWidth}" height="${shirtHeight}" xmlns="http://www.w3.org/2000/svg">
   <image href="${shirtSVGPath}" x="0" y="0" width="${shirtWidth}" height="${shirtHeight}" />
   <image href="${designImage}" x="${imageX}" y="${imageY}" width="${imageWidth}" height="${imageHeight}" />
-</svg>`;
+</svg>
+`;
     }
-
     // Handle form submission, generate SVG, POST to backend
     async function handleSubmit(e) {
         e.preventDefault();
@@ -78,6 +85,8 @@ function DesignEditor() {
             shirtSVGPath: SHIRT_SVG_PATH,
             designImage,
         });
+        console.log("==== SVG Markup to be saved ====");
+        console.log(svgMarkup);
 
         // Send as svg_data to backend
         const result = await dispatch(thunkCreateDesign({
@@ -94,6 +103,7 @@ function DesignEditor() {
         } else {
             setErrors(["Something went wrong"]);
         }
+
     }
 
     return (
