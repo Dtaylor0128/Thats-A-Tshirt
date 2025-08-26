@@ -6,7 +6,8 @@ from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 from flask_login import LoginManager
-from .models import db, User
+
+from .models import db, User, Design, Post, Comment, Like, Follow
 from functools import wraps
 from .api.user_routes import user_routes
 from .api.auth_routes import auth_routes
@@ -20,10 +21,22 @@ from .config import Config
 
 
 app = Flask(__name__, static_folder='../react-vite/dist', static_url_path='/')
-logging.basicConfig(level=logging.DEBUG) # debbuger remember to remove in production
+if app.config['ENV'] =='development':
+    logging.basicConfig(level=logging.DEBUG)
+
+# logging.basicConfig(level=logging.DEBUG) # debbuger remember to remove in production
 # Setup login manager
 login = LoginManager(app)
 login.login_view = 'auth.unauthorized'
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+# Add the user_loader that takes an ID and returns your user object.
+@login_manager.user_loader
+def load_user(user_id):
+    from app.models import User  # adapt import path to your project
+    return User.query.get(int(user_id)) 
 
 
 @login.user_loader
@@ -47,15 +60,15 @@ app.register_blueprint(follow_routes, url_prefix='/api/follows')
 db.init_app(app)
 Migrate(app, db)
 
-def create_app():
-    app = Flask(__name)
-    logging.basicConfig()
-    logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-    return app
+# def create_app():
+#     app = Flask(__name)
+#     logging.basicConfig()
+#     logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+#     return app
 
       # Debugging level logging
 # Application Security
-CORS(app)
+CORS(app, origins=["http://localhost:5173"], supports_credentials=True)
 
 
 # Since we are deploying with Docker and Flask,
@@ -104,8 +117,8 @@ def react_root(path):
     react builds in the production environment for favicon
     or index.html requests
     """
-    if path == 'favicon.ico':
-        return app.send_from_directory('public', 'favicon.ico')
+    if path == 'Thats-a-t-shirt-logo.jpg':
+        return app.send_from_directory('public', 'Thats-a-t-shirt-logo.jpg')
     return app.send_static_file('index.html')
 
 
@@ -114,23 +127,25 @@ def react_root(path):
 #     return app.send_static_file('index.html')
 @app.errorhandler(404)
 def not_found(e):
+    if not request.path.startswith('/api') and not request.path.startswith('/static'):
+        return app.send_static_file('index.html')
     return jsonify(error="Resource not found"), 404
 #handle 404 errors globally
 
 # handles authentication globally
 
-# def auth_required(f):
-#     """
-#     Decorator to require authentication for a route.
-#     """
-#     @wraps(f)
-#     def decorated_function(*args, **kwargs):
-#         token = request.headers.get('Authorization', None)
-#         if token is None or not validate_token(token):
-#             return jsonify({'error': 'Unauthorized'}), 401
-#         g.user = get_user_from_token(token)
-#         return f(*args, **kwargs)
-#     return decorated_function
+def auth_required(f):
+    """
+    Decorator to require authentication for a route.
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        token = request.headers.get('Authorization', None)
+        if token is None or not validate_token(token):
+            return jsonify({'error': 'Unauthorized'}), 401
+        g.user = get_user_from_token(token)
+        return f(*args, **kwargs)
+    return decorated_function
 # @wraps keeps orginal functions metadata
 # fet value of header from incoming http request
 # checks if request has a token

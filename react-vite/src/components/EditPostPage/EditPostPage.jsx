@@ -4,52 +4,73 @@ import { thunkGetPost, thunkUpdatePost } from "../../redux/posts";
 import { useParams, useNavigate } from "react-router-dom";
 
 function EditPostPage() {
-    const dispatch = useDispatch();
     const { id } = useParams();
+    const dispatch = useDispatch();
     const navigate = useNavigate();
-    const post = useSelector(state => state.posts?.byID?.[id]);
-    const [title, setTitle] = useState("");
-    const [description, setDescription] = useState("");
-    const [errors, setErrors] = useState([]);
+    const post = useSelector(state => state.posts.byId?.[id]);
 
+    // Form state
+    const [caption, setCaption] = useState("");
+    const [error, setError] = useState(null);
+
+    // On mount OR when post changes, update local state:
     useEffect(() => {
-        dispatch(thunkGetPost(id));
-    }, [dispatch, id]);
-
-    useEffect(() => {
-        if (post) {
-            setTitle(post.title || "");
-            setDescription(post.description || "");
-        }
-    }, [post]);
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        const updates = { title, description };
-        const result = await dispatch(thunkUpdatePost(id, updates));
-        if (result && !result.error) {
-            navigate(`/posts/${id}`);
+        if (!post) {
+            dispatch(thunkGetPost(id));
         } else {
-            setErrors([result.error || "Failed to update post"]);
+            setCaption(post.caption ?? "");  // update when post loaded
         }
-    };
+    }, [dispatch, id, post]);
 
     if (!post) return <div>Loading post...</div>;
 
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError(null);
+        const res = await dispatch(thunkUpdatePost(id, { caption }));
+        if (res && res.id) {
+            navigate(`/posts`);
+        } else if (res && res.error) {
+            setError(res.error);
+        } else {
+            setError("Failed to update post");
+        }
+    };
+
     return (
-        <div>
-            <h2>Edit Post</h2>
-            <form onSubmit={handleSubmit}>
-                <label>Title
-                    <input value={title} onChange={e => setTitle(e.target.value)} required />
-                </label>
-                <label>Description
-                    <textarea value={description} onChange={e => setDescription(e.target.value)} />
-                </label>
-                {errors.length > 0 && <ul>{errors.map((err, i) => <li key={i} style={{ color: 'red' }}>{err}</li>)}</ul>}
-                <button type="submit">Update Post</button>
-            </form>
-        </div>
+        <form onSubmit={handleSubmit}>
+            <h2>Edit Your Post</h2>
+            <label>
+                Caption:
+                <input
+                    value={caption}
+                    onChange={e => setCaption(e.target.value)}
+                />
+            </label>
+            {error && <div style={{ color: "red" }}>{error}</div>}
+            <button type="submit">Save Changes</button>
+            {/* Post design SVG preview */}
+            <div
+                style={{
+                    border: "1px solid #ddd",
+                    width: 400,
+                    height: 400,
+                    background: "#faf8f3",
+                    margin: "0 auto",
+                    marginBottom: 12,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                }}
+                dangerouslySetInnerHTML={{ __html: post.svg_data }}
+            />
+            <label>
+                Caption:
+                <input value={caption} onChange={e => setCaption(e.target.value)} />
+            </label>
+
+        </form>
     );
 }
+
 export default EditPostPage;

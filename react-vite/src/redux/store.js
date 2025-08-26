@@ -8,11 +8,21 @@ import thunk from "redux-thunk";
 import sessionReducer from "./session";
 import postsReducer from "./posts";
 import designsReducer from "./designs";
+import commentsReducer from "./comments";
+import followsReducer from "./follows";
+import likesReducer from "./likes";
+import usersReducer from "./users";
+
 
 const rootReducer = combineReducers({
   session: sessionReducer,
+  users: usersReducer,
   designs: designsReducer,
   posts: postsReducer,
+  comments: commentsReducer,
+  follows: followsReducer,
+  likes: likesReducer
+
 
 });
 

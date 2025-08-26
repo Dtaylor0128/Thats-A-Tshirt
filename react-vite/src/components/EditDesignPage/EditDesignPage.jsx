@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
-import { thunkGetDesignById, thunkEditDesign, thunkDeleteDesign } from "../store/designs";
+import { thunkGetDesign, thunkUpdateDesign, thunkDeleteDesign } from "../../redux/designs";
 import "./EditDesignPage.css";
 
 const EditDesignPage = () => {
@@ -9,27 +9,28 @@ const EditDesignPage = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const design = useSelector((state) => state.designs.byId[id]);
-    const [title, setTitle] = useState("");
-    const [svg, setSvg] = useState("");
-    const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(false);
 
-    // Load design on mount
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    // Load design (once)
     useEffect(() => {
-        if (!design) {
-            dispatch(thunkGetDesignById(id));
-        } else {
-            setTitle(design.title);
-            setSvg(design.svg);
+        if (!design && !loading) {
+            setLoading(true);
+            dispatch(thunkGetDesign(id)).finally(() => setLoading(false));
+        } else if (design) {
+            setTitle(design.title || "");
+            setDescription(design.description || "");
         }
-    }, [dispatch, id, design]);
+    }, [dispatch, id, design, loading]);
 
     const handleSave = async (e) => {
         e.preventDefault();
-        setLoading(true);
-        setError(null);
+        setLoading(true); setError(null);
         try {
-            await dispatch(thunkEditDesign({ id, title, svg }));
+            await dispatch(thunkUpdateDesign(id, { title, description }));
             navigate(`/designs/${id}`);
         } catch (err) {
             setError("Failed to save. Check your connection and try again.");
@@ -39,72 +40,51 @@ const EditDesignPage = () => {
     };
 
     const handleDelete = async () => {
-        if (!window.confirm("Delete this design?")) return;
-        setLoading(true);
-        setError(null);
-        try {
-            await dispatch(thunkDeleteDesign(id));
-            // After delete: refresh or navigate away
-            navigate("/designs");
-        } catch (err) {
-            setError("Failed to delete. Try again.");
-        } finally {
-            setLoading(false);
+        if (window.confirm("Delete this design?")) {
+            setLoading(true); setError(null);
+            try {
+                await dispatch(thunkDeleteDesign(id));
+                navigate("/designs");
+            } catch {
+                setError("Failed to delete.");
+            } finally {
+                setLoading(false);
+            }
         }
     };
 
-    if (!design) return <div className="edit-page__loading">Loading…</div>;
-
+    if (loading) return <div>Loading…</div>;
+    if (!design) return <div>Design not found. It may have been deleted.</div>;
     return (
-        <div className="edit-page grid-container">
-            <h2 className="edit-page__header">Edit Design</h2>
-            <form className="edit-form" onSubmit={handleSave}>
-                <label className="edit-form__label">
-                    Title
-                    <input
-                        className="edit-form__input"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        required
-                    />
-                </label>
-                <label className="edit-form__label">
-                    SVG Markup
-                    <textarea
-                        className="edit-form__textarea"
-                        value={svg}
-                        onChange={(e) => setSvg(e.target.value)}
-                        rows={10}
-                    />
-                </label>
-                <div className="edit-form__actions">
-                    <button
-                        className="edit-form__button edit-form__button--primary"
-                        type="submit"
-                        disabled={loading}
-                    >
-                        Save
-                    </button>
-                    <button
-                        className="edit-form__button edit-form__button--danger"
-                        type="button"
-                        onClick={handleDelete}
-                        disabled={loading}
-                    >
-                        Delete
-                    </button>
-                </div>
-                {error && <p className="edit-form__error">{error}</p>}
-            </form>
-            <div className="edit-preview">
-                <h3 className="edit-preview__header">Live Preview</h3>
-                <div
-                    className="edit-preview__svg"
-                    dangerouslySetInnerHTML={{ __html: svg }}
+        <form className="edit-form" onSubmit={handleSave}>
+            {/* SVG Preview above title/description */}
+            <div
+                className="edit-preview__svg"
+                style={{ textAlign: "center", marginBottom: "1.5em" }}
+                dangerouslySetInnerHTML={{ __html: design.svg_data }}
+            />
+            <label>
+                Title:
+                <input
+                    value={title}
+                    onChange={e => setTitle(e.target.value)}
+                    required
                 />
-            </div>
-        </div>
+            </label>
+            <label>
+                Description:
+                <textarea
+                    value={description}
+                    onChange={e => setDescription(e.target.value)}
+                    rows={6}
+                />
+            </label>
+            {error && <div className="edit-form__error">{error}</div>}
+            <button type="submit" disabled={loading}>Save</button>
+            <button type="button" onClick={handleDelete} disabled={loading}>Delete</button>
+        </form>
     );
 };
+
 
 export default EditDesignPage;

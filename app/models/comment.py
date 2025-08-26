@@ -22,6 +22,7 @@ class Comment(db.Model):
         return {
             'id': self.id,
             'user_id': self.user_id,
+            'username': self.user.username,
             'post_id': self.post_id,
             'content': self.content,
             'created_at': self.created_at.isoformat(),

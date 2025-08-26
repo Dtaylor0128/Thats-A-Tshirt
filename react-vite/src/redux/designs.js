@@ -1,29 +1,36 @@
 
 
 // action types for design  management
-const SET_DESIGN = 'designs/setDesign';
-const SET_DESIGNS = 'designs/setDesigns';
-const REMOVE_DESIGN = 'designs/removeDesign';
-const CLEAR_DESIGNS = 'designs/clearDesigns';
+const LOAD_DESIGNS = 'designs/LOAD_DESIGNS';          // fetch multiple designs
+const UPLOAD_DESIGN = 'designs/UPLOAD_DESIGN';        // fetch/create/replace a single design
+const CREATE_DESIGN = 'designs/CREATE_DESIGN';        // create a single design (used after POST)
+const UPDATE_DESIGN = 'designs/UPDATE_DESIGN';        // update a single design (used after PUT/PATCH)
+const DELETE_DESIGN = 'designs/DELETE_DESIGN';        // delete by id
 
 // action creators
-export const setDesign = (design) => ({
-    type: SET_DESIGN,
-    payload: design
+export const loadDesigns = (designs) => ({
+    type: LOAD_DESIGNS,
+    designs
 });
 
-export const setDesigns = (designs) => ({
-    type: SET_DESIGNS,
-    payload: designs // array of designs
+export const uploadDesign = (design) => ({
+    type: UPLOAD_DESIGN,
+    design
 });
 
-export const removeDesign = (designId) => ({
-    type: REMOVE_DESIGN,
-    payload: designId
+export const createDesign = (design) => ({
+    type: CREATE_DESIGN,
+    design
 });
 
-export const clearDesigns = () => ({
-    type: CLEAR_DESIGNS
+export const updateDesign = (design) => ({
+    type: UPDATE_DESIGN,
+    design
+});
+
+export const deleteDesign = (designId) => ({
+    type: DELETE_DESIGN,
+    designId
 });
 
 
@@ -31,148 +38,139 @@ export const clearDesigns = () => ({
 // Thunks
 
 // GET one design by id 
-export const thunkGetDesign = (designId) => async (dispatch) => {
-    const response = await fetch(`/api/designs/${designId}`);
-    if (response.ok) {
-        const json = await response.json();
-        //flask wraps the design in a data object
-        const design = json.design;
-        dispatch(setDesign(design));
-        return design;
-    } else {
-        // handle error
-        return { error: "Failed to fetch design" };
-    }
-};
-// will extract the design from the response and work with reducer
-
-
-// GET many designs (for example, for a user's design list)
-export const thunkGetDesigns = () => async (dispatch) => {
-    const response = await fetch('/api/designs/');
+export const thunkGetDesign = (id) => async dispatch => {
+    const response = await fetch(`/api/designs/${id}`);
     if (response.ok) {
         const data = await response.json();
-        // if data is {design:[]}, we only want the array
-        const designs = data.designs || data;
-        dispatch(setDesigns(designs));
-        return designs;
+        dispatch(uploadDesign(data.design));  // uses UPLOAD_DESIGN for single fetch
+        return data.design;
+    } else if (response.status < 500) {
+        const errorMessages = await response.json();
+        return errorMessages;
     } else {
-        // handle error
-        return { error: "Failed to fetch designs" };
+        return { server: "Something went wrong. Please try again" };
     }
-}
+};
+
+// GET many designs (for example, for a user's design list)
+export const thunkGetDesigns = () => async dispatch => {
+    const response = await fetch('/api/designs');
+    if (response.ok) {
+        const data = await response.json();
+        dispatch(loadDesigns(data.designs));
+        return data.designs;
+    } else if (response.status < 500) {
+        const errorMessages = await response.json();
+        return errorMessages;
+    } else {
+        return { server: "Something went wrong. Please try again" };
+    }
+};
+
 
 // POST a new design (creating a new design)
-export const thunkCreateDesign = (data) => async (dispatch) => {
-    const response = await fetch("/api/designs/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
+export const thunkCreateDesign = (designData) => async dispatch => {
+    const response = await fetch('/api/designs/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(designData),
+        credentials: 'include'
     });
     if (response.ok) {
-        const newDesign = await response.json();
-        dispatch(setDesign(newDesign));
-        return newDesign;         // <<< CRUCIAL: return the new design!
+        const data = await response.json();
+        dispatch(createDesign(data));
+        return data;
+    } else if (response.status < 500) {
+        const errorMessages = await response.json();
+        return errorMessages;
     } else {
-        let error = "Something went wrong";
-        try {
-            const errJson = await response.json();
-            error = errJson.error || error;
-        } catch { }
-        return { error };
+        return { server: "Something went wrong. Please try again" };
     }
 };
 
 
 // PUT to update a design (editing an existing design)
-export const thunkUpdateDesign = (designId, updates) => async (dispatch) => {
-    const response = await fetch(`/api/designs/${designId}`, {
+export const thunkUpdateDesign = (id, updates) => async dispatch => {
+    const response = await fetch(`/api/designs/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
-        credentials: "include",
-
+        credentials: 'include'
     });
-
     if (response.ok) {
-        const design = await response.json();
-        dispatch(setDesign(design));
-        return design;
+        const data = await response.json();
+        dispatch(updateDesign(data.design));
+        return data.design;
+    } else if (response.status < 500) {
+        const errorMessages = await response.json();
+        return errorMessages;
     } else {
-        // handle error
-        const errorData = await response.json();
-        return errorData;
+        return { server: "Something went wrong. Please try again" };
     }
-}
+};
 
 // DELETE a design (removing a design)
-export const thunkDeleteDesign = (designId) => async (dispatch) => {
-    const response = await fetch(`/api/designs/${designId}`, {
-        method: 'DELETE'
+export const thunkDeleteDesign = (id) => async dispatch => {
+    const response = await fetch(`/api/designs/${id}`, {
+        method: 'DELETE',
+        credentials: 'include'
     });
-
     if (response.ok) {
-        dispatch(removeDesign(designId));
-        return true;
+        dispatch(deleteDesign(id));
+        return id;
+    } else if (response.status < 500) {
+        const errorMessages = await response.json();
+        return errorMessages;
     } else {
-        // handle error
-        return false;
+        return { server: "Something went wrong. Please try again" };
     }
-}
+};
+
+// initial state 
 
 const initialState = {
-    byId: {}, // stores designs by their id
-    allIds: [] // stores all design ids for easy iteration  
+    byId: {},
+    allIds: []
 };
 
 // Reducer
 export default function designsReducer(state = initialState, action) {
     switch (action.type) {
-        case SET_DESIGN: {
-            const design = action.payload;
+        case LOAD_DESIGNS: {
+            const newById = {};
+            const newAllIds = [];
+            action.designs.forEach(design => {
+                newById[design.id] = design;
+                newAllIds.push(design.id);
+            });
+            return { ...state, byId: newById, allIds: newAllIds };
+        }
+
+        case UPLOAD_DESIGN:
+        case CREATE_DESIGN:
+        case UPDATE_DESIGN: {
+            const design = action.design;
             return {
+                ...state,
                 byId: { ...state.byId, [design.id]: design },
                 allIds: state.allIds.includes(design.id)
                     ? state.allIds
                     : [...state.allIds, design.id]
             };
         }
-        // case SET_DESIGNS: {
-        //     const designs = action.payload;
-        //     const byId = {};
-        //     const allIds = [];
-        //     designs.forEach(design => {
-        //         byId[design.id] = design;
-        //         allIds.push(design.id);
-        //     });
-        //     return { byId, allIds };
-        // }
-        case SET_DESIGNS: {
-            const byId = {};
-            const allIds = [];
-            for (let design of action.payload) {
-                byId[design.id] = design;
-                allIds.push(design.id);
-            };
-            return { byId, allIds };
-        }
-        case REMOVE_DESIGN: {
-            const designId = action.payload;
+        case DELETE_DESIGN: {
+            const { designId } = action;
             const newById = { ...state.byId };
             delete newById[designId];
             return {
+                ...state,
                 byId: newById,
                 allIds: state.allIds.filter(id => id !== designId)
             };
         }
-        case CLEAR_DESIGNS:
-            return { ...initialState };
         default:
             return state;
     }
 }
 
 // Notes:
-// - This reducer manages designs by storing them in a normalized format.
-// - It allows for easy access to individual designs by their ID and maintains a list of all design IDs for iteration.
-// - The thunks handle API interactions for creating, reading, updating, and deleting designs, dispatching the appropriate actions to update the state in the Redux store.
