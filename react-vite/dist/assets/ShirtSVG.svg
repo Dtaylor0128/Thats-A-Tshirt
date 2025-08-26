@@ -1,12 +1,11 @@
-<svg version="1.0" xmlns="http://www.w3.org/2000/svg"
- width="1280.000000pt" height="1220.000000pt" viewBox="0 0 1280.000000 1220.000000"
- preserveAspectRatio="xMidYMid meet">
-<metadata>
-Created by potrace 1.15, written by Peter Selinger 2001-2017
-</metadata>
-<g transform="translate(0.000000,1220.000000) scale(0.100000,-0.100000)"
-fill="currentColor" stroke="none">
-<path d="M7723 12180 c-98 -26 -191 -70 -373 -179 -212 -128 -299 -174 -408
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="800"
+  height="800"
+  viewBox="0 0 1400 1500"
+>
+  <g transform="translate(0.000000,1220.000000) scale(0.100000,-0.100000)" fill="currentColor" stroke="none">
+   <path d="M7723 12180 c-98 -26 -191 -70 -373 -179 -212 -128 -299 -174 -408
 -216 -462 -178 -965 -97 -1681 271 -101 52 -188 94 -194 94 -6 0 -135 -48
 -286 -106 -962 -369 -1421 -545 -1753 -673 l-376 -146 -1326 -1519 -1325
 -1520 37 -43 c20 -24 444 -499 942 -1057 l905 -1015 136 0 136 -1 239 251 239
@@ -16,5 +15,7 @@ fill="currentColor" stroke="none">
 7 115 20 l103 22 924 1035 925 1035 0 155 0 155 -1219 1325 -1219 1325 -928
 419 c-511 231 -1081 489 -1267 573 -186 84 -345 153 -355 152 -9 0 -49 -9 -89
 -19z"/>
-</g>
+
+
+  </g>
 </svg>
