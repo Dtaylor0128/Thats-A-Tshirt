@@ -5,7 +5,7 @@ const CREATE_FOLLOW = 'follows/CREATE_FOLLOW';        // create a single follow 
 const UPDATE_FOLLOW = 'follows/UPDATE_FOLLOW';        // update a single follow (used after PUT/PATCH)
 const DELETE_FOLLOW = 'follows/DELETE_FOLLOW';        // delete by id
 const LOAD_FOLLOWERS = 'follows/LOAD_FOLLOWERS';
-const LOAD_FOLLOWING = 'folows/LOAD_FOLLOWING';
+const LOAD_FOLLOWING = 'follows/LOAD_FOLLOWING';
 
 // action creators
 export const loadFollows = (follows) => ({

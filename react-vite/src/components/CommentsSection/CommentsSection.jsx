@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { thunkCreateComment, thunkUpdateComment, thunkDeleteComment, thunkGetComments } from "../../redux/comments";
@@ -107,3 +108,4 @@ function CommentsSection({ postId, currentUser }) {
 }
 
 export default CommentsSection;
+

@@ -8,13 +8,13 @@ import CommentsSection from "../CommentsSection/CommentsSection";
 function PostDetailPage() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { postId } = useParams();
+    const { id } = useParams();
     const post = useSelector(state => state.posts.byId[Number(postId)]);
     const currentUser = useSelector(state => state.session.user);
 
     useEffect(() => {
-        if (postId) dispatch(thunkGetPost(postId));
-    }, [dispatch, postId]);
+        if (id) dispatch(thunkGetPost(id));
+    }, [dispatch, id]);
 
     const userLike = useSelector(state =>
         state.likes.allIds
@@ -38,7 +38,7 @@ function PostDetailPage() {
 
     const handleDelete = async () => {
         if (window.confirm("Are you sure you want to delete this post?")) {
-            const result = await dispatch(thunkDeletePost(postId));
+            const result = await dispatch(thunkDeletePost(id));
             if (result === true) navigate("/posts");
         }
     };
