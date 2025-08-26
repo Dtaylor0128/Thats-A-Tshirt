@@ -26,6 +26,7 @@ class Post(db.Model):
             'user_id': self.user_id,
             'design_id': self.design_id,
             'caption': self.caption,
+            'svg_data' :self.design.svg_data if self.design else None,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat(),
         }

@@ -4,7 +4,8 @@ const UPLOAD_FOLLOW = 'follows/UPLOAD_FOLLOW';        // fetch/create/replace a 
 const CREATE_FOLLOW = 'follows/CREATE_FOLLOW';        // create a single follow (used after POST)
 const UPDATE_FOLLOW = 'follows/UPDATE_FOLLOW';        // update a single follow (used after PUT/PATCH)
 const DELETE_FOLLOW = 'follows/DELETE_FOLLOW';        // delete by id
-
+const LOAD_FOLLOWERS = 'follows/LOAD_FOLLOWERS';
+const LOAD_FOLLOWING = 'folows/LOAD_FOLLOWING';
 
 // action creators
 export const loadFollows = (follows) => ({
@@ -27,9 +28,41 @@ export const deleteFollow = (followId) => ({
     type: DELETE_FOLLOW,
     followId
 });
+export const loadFollowers = (followers) => ({
+    type: LOAD_FOLLOWERS,
+    followers
+});
+
+export const loadFollowing = (following) => ({
+    type: LOAD_FOLLOWING,
+    following
+});
 
 
 // Thunks
+export const thunkGetFollowers = (userId) => async dispatch => {
+    const response = await fetch(`/api/users/${userId}/followers`);
+    if (response.ok) {
+        const data = await response.json();
+        dispatch(loadFollowers(data.followers));
+        return data.followers;
+    } else {
+        // handle error as needed
+        return [];
+    }
+};
+
+export const thunkGetFollowing = (userId) => async dispatch => {
+    const response = await fetch(`/api/users/${userId}/following`);
+    if (response.ok) {
+        const data = await response.json();
+        dispatch(loadFollowing(data.following));
+        return data.following;
+    } else {
+        // handle error as needed
+        return [];
+    }
+};
 // GET one follow by id
 export const thunkGetFollow = (id) => async dispatch => {
     const response = await fetch(`/api/follows/${id}`);
@@ -151,6 +184,7 @@ export default function followsReducer(state = initialState, action) {
         }
         case DELETE_FOLLOW: {
             const { followId } = action;
+            // eslint-disable-next-line no-unused-vars
             const { [followId]: _, ...newById } = state.byId;
             return {
                 ...state,
@@ -158,6 +192,10 @@ export default function followsReducer(state = initialState, action) {
                 allIds: state.allIds.filter(id => id !== followId)
             };
         }
+        case LOAD_FOLLOWERS:
+            return { ...state, followers: action.followers };
+        case LOAD_FOLLOWING:
+            return { ...state, following: action.following };
         default:
             return state;
     }

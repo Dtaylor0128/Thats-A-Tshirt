@@ -26,4 +26,4 @@ class Config:
     #     }
     # } #setting search path to tshirt-schema
 
-    SQLALCHEMY_ECHO = True
+    SQLALCHEMY_ECHO = False

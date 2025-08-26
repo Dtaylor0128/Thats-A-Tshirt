@@ -29,6 +29,15 @@ if app.config['ENV'] =='development':
 login = LoginManager(app)
 login.login_view = 'auth.unauthorized'
 
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+# Add the user_loader that takes an ID and returns your user object.
+@login_manager.user_loader
+def load_user(user_id):
+    from app.models import User  # adapt import path to your project
+    return User.query.get(int(user_id)) 
+
 
 @login.user_loader
 def load_user(id):

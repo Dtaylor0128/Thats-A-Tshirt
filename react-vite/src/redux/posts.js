@@ -33,8 +33,8 @@ export const thunkGetPost = (id) => async dispatch => {
     const response = await fetch(`/api/posts/${id}`);
     if (response.ok) {
         const data = await response.json();
-        dispatch(uploadPost(data.post));  // uses UPLOAD_POST for single fetch
-        return data.post;
+        dispatch(uploadPost(data));  // uses UPLOAD_POST for single fetch
+        return data;
     } else if (response.status < 500) {
         const errorMessages = await response.json();
         return errorMessages;
@@ -61,21 +61,24 @@ export const thunkGetPosts = () => async dispatch => {
 
 // POST a new post (creating a new post)
 export const thunkCreatePost = (postData) => async dispatch => {
-    const response = await fetch('/api/posts', {
+    const response = await fetch('/api/posts/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(postData),
-        credentials: 'include'
+        credentials: 'include',  // <credentials
     });
     if (response.ok) {
         const data = await response.json();
-        dispatch(createPost(data.post));
-        return data.post;
-    } else if (response.status < 500) {
-        const errorMessages = await response.json();
-        return errorMessages;
+        dispatch(createPost(data));
+        return data;
     } else {
-        return { server: "Something went wrong. Please try again" };
+        // handle errors
+        try {
+            const err = await response.json();
+            return { error: err.message || "Failed to create post" };
+        } catch {
+            return { error: "Failed to create post" };
+        }
     }
 };
 
@@ -127,15 +130,22 @@ const initialState = {
 export default function postsReducer(state = initialState, action) {
     switch (action.type) {
         case LOAD_POSTS: {
-            const newById = {};
-            const newAllIds = [];
-            action.posts.forEach(post => {
-                newById[post.id] = post;
-                newAllIds.push(post.id);
-            });
-            return { ...state, byId: newById, allIds: newAllIds };
+            const newById = { ...state.byId }; // merge with existing
+            action.posts.forEach(post => { newById[post.id] = post; });
+            return {
+                ...state,
+                byId: newById,
+                allIds: [...new Set([...state.allIds, ...action.posts.map(p => p.id)])]
+            };
         }
-        case UPLOAD_POST:
+        case UPLOAD_POST: {
+            const post = action.post;
+            return {
+                ...state,
+                byId: { ...state.byId, [post.id]: post },
+                allIds: state.allIds.includes(post.id) ? state.allIds : [...state.allIds, post.id]
+            };
+        }
         case CREATE_POST:
         case UPDATE_POST: {
             const post = action.post;
@@ -149,7 +159,8 @@ export default function postsReducer(state = initialState, action) {
         }
         case DELETE_POST: {
             const { postId } = action;
-            const { [postId]: _, ...newById } = state.byId;
+            // eslint-disable-next-line no-unused-vars
+            const { [postId]: _removed, ...newById } = state.byId;
             return {
                 ...state,
                 byId: newById,

@@ -78,8 +78,8 @@ export const thunkCreateDesign = (designData) => async dispatch => {
     });
     if (response.ok) {
         const data = await response.json();
-        dispatch(createDesign(data.design));
-        return data.design;
+        dispatch(createDesign(data));
+        return data;
     } else if (response.status < 500) {
         const errorMessages = await response.json();
         return errorMessages;
@@ -160,7 +160,8 @@ export default function designsReducer(state = initialState, action) {
         }
         case DELETE_DESIGN: {
             const { designId } = action;
-            const { [designId]: _, ...newById } = state.byId;
+            const newById = { ...state.byId };
+            delete newById[designId];
             return {
                 ...state,
                 byId: newById,

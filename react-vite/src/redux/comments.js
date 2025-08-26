@@ -45,13 +45,12 @@ export const thunkGetComment = (id) => async dispatch => {
 
 
 // GET many comments (for example, for a post's comments)
-export const thunkGetComments = () => async dispatch => {
-    const response = await fetch('/api/comments');
+export const thunkGetComments = (postId) => async dispatch => {
+    const response = await fetch(`/api/posts/${postId}/comments`);
     if (response.ok) {
         const data = await response.json();
-        const commentsArray = Array.isArray(data) ? data : data.comments;
-        dispatch(loadComments(commentsArray));
-        return commentsArray;
+        dispatch(loadComments(data.comments));
+        return data.comments;
     } else if (response.status < 500) {
         const errorMessages = await response.json();
         return errorMessages;
@@ -61,8 +60,8 @@ export const thunkGetComments = () => async dispatch => {
 };
 
 // POST a new comment (creating a new comment)
-export const thunkCreateComment = (commentData) => async dispatch => {
-    const response = await fetch('/api/comments', {
+export const thunkCreateComment = (postId, commentData) => async dispatch => {
+    const response = await fetch(`/api/posts/${postId}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(commentData),
@@ -149,7 +148,8 @@ export default function commentsReducer(state = initialState, action) {
         }
         case DELETE_COMMENT: {
             const { commentId } = action;
-            const { [commentId]: _, ...newById } = state.byId;
+            // eslint-disable-next-line no-unused-vars
+            const { [commentId]: _removed, ...newById } = state.byId;
             return {
                 ...state,
                 byId: newById,

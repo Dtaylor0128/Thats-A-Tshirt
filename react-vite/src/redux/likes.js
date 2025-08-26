@@ -150,6 +150,7 @@ export default function likesReducer(state = initialState, action) {
         }
         case DELETE_LIKE: {
             const { likeId } = action;
+            // eslint-disable-next-line no-unused-vars
             const { [likeId]: _, ...newById } = state.byId;
             return {
                 ...state,
