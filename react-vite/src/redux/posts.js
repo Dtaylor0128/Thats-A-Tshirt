@@ -33,8 +33,8 @@ export const thunkGetPost = (id) => async dispatch => {
     const response = await fetch(`/api/posts/${id}`);
     if (response.ok) {
         const data = await response.json();
-        dispatch(uploadPost(data));  // uses UPLOAD_POST for single fetch
-        return data;
+        dispatch(uploadPost(data.post));  // uses UPLOAD_POST for single fetch
+        return data.post;
     } else if (response.status < 500) {
         const errorMessages = await response.json();
         return errorMessages;

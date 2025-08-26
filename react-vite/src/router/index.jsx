@@ -11,6 +11,7 @@ import EditPostPage from '../components/EditPostPage/EditPostPage';
 import EditDesignPage from '../components/EditDesignPage/EditDesignPage';
 
 import LandingPage from '../components/LandingPage/LandingPage';
+import MyPostsPage from '../components/MyPostsPage/MyPostsPage';
 export const router = createBrowserRouter([
   {
     element: <Layout />,
@@ -69,6 +70,10 @@ export const router = createBrowserRouter([
       {
         path: "posts/:id/edit",
         element: <EditPostPage />,
+      },
+      {
+        path: "users/:id/posts",
+        element: <MyPostsPage />,
       },
     ],
   },
