@@ -21,6 +21,17 @@ function DesignPage() {
         dispatch(thunkGetDesigns());
     }, [dispatch]);
 
+    // Delete Handler 
+    const handleDelete = async (designId) => {
+        if (window.confirm("Delete this design permanently?")) {
+            await dispatch(thunkDeleteDesign(designId));
+        }
+    };
+
+    const handleCreatePost = (design) => {
+        navigate(`/posts/new?designId=${design.id}`);
+    }
+
     if (!designs.length) return <div>Loading designs...</div>;
 
     return (

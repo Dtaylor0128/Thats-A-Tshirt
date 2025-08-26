@@ -6,15 +6,23 @@ import {
 } from "redux";
 import thunk from "redux-thunk";
 import sessionReducer from "./session";
-//import postsReducer from "./posts";
+import postsReducer from "./posts";
 import designsReducer from "./designs";
-//import commentsReducer from "./comments";
+import commentsReducer from "./comments";
+import followsReducer from "./follows";
+import likesReducer from "./likes";
+import usersReducer from "./users";
+
 
 const rootReducer = combineReducers({
   session: sessionReducer,
+  users: usersReducer,
   designs: designsReducer,
-  //posts: postsReducer,
-  //comments: commentsReducer,
+  posts: postsReducer,
+  comments: commentsReducer,
+  follows: followsReducer,
+  likes: likesReducer
+
 
 });
 
@@ -33,3 +41,4 @@ const configureStore = (preloadedState) => {
 };
 
 export default configureStore;
+
